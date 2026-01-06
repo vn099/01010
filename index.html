@@ -21,14 +21,17 @@ input.bit {
   font-size: 18px;
   text-align: center;
   margin: 0 6px;
-  border-radius: 8px;        /* bo tròn hơn */
+
+  background-color: yellow;   /* nền vàng */
   border: 1px solid #999;
-  outline: none;
+  border-radius: 8px;
+
+  font-weight: bold;
+  color: #000;
 }
 
 input.bit:focus {
-  border-color: #007bff;
-  box-shadow: 0 0 3px rgba(0,123,255,.6);
+  background-color: #ffe066;
 }
 
 .bit-box { display: inline-block; width: 26px; }
@@ -118,10 +121,22 @@ function renderBits(bits, changed = []) {
   ).join("");
 }
 
-/* ===== NHẬP BIT ===== */
 function handleInput(el) {
   el.value = el.value.replace(/[^01]/g, "");
-  if (el.value && el.nextElementSibling) el.nextElementSibling.focus();
+
+  // đổi màu theo giá trị
+  if (el.value === "1") {
+    el.style.color = "red";
+  } else if (el.value === "0") {
+    el.style.color = "#0096c7";
+  } else {
+    el.style.color = "#000";
+  }
+
+  // auto focus
+  if (el.value && el.nextElementSibling) {
+    el.nextElementSibling.focus();
+  }
 
   const row = el.closest("tr");
   const inputs = row.querySelectorAll("input.bit");
@@ -182,3 +197,4 @@ function resetAll() {
 
 </body>
 </html>
+
