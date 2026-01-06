@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>60 dãy A – Mask 5 bit</title>
+
+<style>
+body { font-family: Arial, sans-serif; padding: 10px; }
+table { border-collapse: collapse; width: 100%; max-width: 1800px; }
+th, td { border: 1px solid #ccc; padding: 4px; text-align: center; }
+input.bit {
+  width: 30px;
+  font-size: 18px;
+  text-align: center;
+}
+
+input.bit {
+  width: 30px;
+  height: 36px;
+  font-size: 18px;
+  text-align: center;
+  margin: 0 6px;
+  border-radius: 8px;        /* bo tròn hơn */
+  border: 1px solid #999;
+  outline: none;
+}
+
+input.bit:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 3px rgba(0,123,255,.6);
+}
+
+.bit-box { display: inline-block; width: 26px; }
+.changed { background: #ff4d4d; color: #fff; font-weight: bold; }
+textarea.row-output {
+  width: 150px;
+  height: 32px;
+  resize: none;
+  font-family: monospace;
+  font-size: 14px;
+}
+button {
+  margin: 6px 6px 12px 0;
+  padding: 8px 20px;
+  font-size: 16px;
+}
+</style>
+</head>
+
+<body>
+
+<h3>60 dãy A (5 bit) – Cách 3 + Xuất const</h3>
+
+<button onclick="copyAll()">Copy const FINAL_MASKS</button>
+<button onclick="resetAll()">Reset (giữ mask đã sửa)</button>
+
+<table>
+<thead>
+<tr>
+  <th>#</th>
+  <th>A (5 bit)</th>
+  <th>Mask ban đầu</th>
+  <th>C = A XOR Mask</th>
+  <th>Mask sau sửa</th>
+  <th>Chuỗi mask sau sửa</th>
+</tr>
+</thead>
+<tbody id="rows"></tbody>
+</table>
+
+<script>
+/* ===== 60 MASK BAN ĐẦU ===== */
+const MASKS = [
+  "10101","01010","11000","00111","10010","01101",
+  "11100","00011","10110","01001","11010","00101",
+  "10001","01110","11101","00010","10100","01011",
+  "11001","00110","10011","01100","11110","00001",
+  "10111","01000","11011","00100","10000","01111",
+  "11111","00000","10101","01010","11000","00111",
+  "10010","01101","11100","00011","10110","01001",
+  "11010","00101","10001","01110","11101","00010",
+  "10111","01000","11011","00100","10000","01111",
+  "11111","00000","10101","01010","11000","00111"
+];
+
+/* ===== CONST KẾT QUẢ CUỐI ===== */
+const FINAL_MASKS = Array(60).fill(null);
+
+const tbody = document.getElementById("rows");
+
+/* ===== TẠO BẢNG ===== */
+for (let i = 0; i < 60; i++) {
+  const tr = document.createElement("tr");
+  tr.innerHTML = `
+    <td>${i + 1}</td>
+    <td>
+      ${Array(5).fill(0).map(() =>
+        `<input class="bit" maxlength="1"
+                inputmode="numeric" pattern="[01]"
+                oninput="handleInput(this)">`
+      ).join("")}
+    </td>
+    <td>${renderBits(MASKS[i])}</td>
+    <td id="c-${i}"></td>
+    <td id="out-${i}"></td>
+    <td>
+      <textarea class="row-output" id="txt-${i}" readonly></textarea>
+    </td>
+  `;
+  tbody.appendChild(tr);
+}
+
+/* ===== RENDER BIT ===== */
+function renderBits(bits, changed = []) {
+  return bits.split("").map((b, i) =>
+    `<span class="bit-box ${changed.includes(i) ? 'changed' : ''}">${b}</span>`
+  ).join("");
+}
+
+/* ===== NHẬP BIT ===== */
+function handleInput(el) {
+  el.value = el.value.replace(/[^01]/g, "");
+  if (el.value && el.nextElementSibling) el.nextElementSibling.focus();
+
+  const row = el.closest("tr");
+  const inputs = row.querySelectorAll("input.bit");
+  if ([...inputs].every(i => i.value !== "")) {
+    calculateRow(row);
+    row.nextElementSibling?.querySelector("input.bit")?.focus();
+  }
+}
+
+/* ===== TÍNH 1 HÀNG ===== */
+function calculateRow(row) {
+  const idx = row.rowIndex - 1;
+  const A = [...row.querySelectorAll("input.bit")].map(i => +i.value);
+  let mask = MASKS[idx].split("").map(Number);
+  let changed = [];
+
+  let C = A.map((b, i) => b ^ mask[i]);
+  let ones = [];
+  for (let i = 0; i < 5; i++) if (C[i] === 1) ones.push(i);
+
+  while (ones.length > 2) {
+    const pos = ones[Math.floor(Math.random() * ones.length)];
+    mask[pos] ^= 1;
+    C[pos] ^= 1;
+    changed.push(pos);
+    ones = ones.filter(i => i !== pos);
+  }
+
+  FINAL_MASKS[idx] = mask.slice();
+
+  document.getElementById(`c-${idx}`).innerHTML = renderBits(C.join(""));
+  document.getElementById(`out-${idx}`).innerHTML = renderBits(mask.join(""), changed);
+  document.getElementById(`txt-${idx}`).value =
+    `[${mask.join(",")}],`;
+}
+
+/* ===== COPY CONST ===== */
+function copyAll() {
+  if (FINAL_MASKS.some(v => v === null)) {
+    alert("Chưa đủ 60 mask");
+    return;
+  }
+
+  const text =
+`const FINAL_MASKS = [
+${FINAL_MASKS.map(m => `  [${m.join(",")}],`).join("\n")}
+];`;
+
+  navigator.clipboard.writeText(text);
+  alert("Đã copy const FINAL_MASKS");
+}
+
+/* ===== RESET ===== */
+function resetAll() {
+  document.querySelectorAll("input.bit").forEach(i => i.value = "");
+}
+</script>
+
+</body>
+</html>
