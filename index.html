@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>60 dãy A – Mask 5 bit</title>
+<title>60 dãy A – Mask 5 bit (logic mới)</title>
 
 <style>
 body { font-family: Arial, sans-serif; padding: 10px; }
@@ -20,26 +20,22 @@ input.bit {
   border: 1px solid #999;
   border-radius: 8px;
   font-weight: bold;
-  color: #000;
 }
 
-input.bit:focus {
-  background-color: #ffe066;
-}
-
-/* bit A trùng mask */
-input.bit.match-mask {
-  background-color: #ff4d4d !important;
-  color: #fff !important;
-}
-
-/* bit C readonly */
 input.bit.c-bit {
   cursor: default;
 }
 
-.bit-box { display: inline-block; width: 26px; }
-.changed { background: #ff4d4d; color: #fff; font-weight: bold; }
+.bit-box {
+  display: inline-block;
+  width: 26px;
+}
+
+.changed {
+  background: #ff4d4d;
+  color: #fff;
+  font-weight: bold;
+}
 
 textarea.row-output {
   width: 150px;
@@ -59,20 +55,20 @@ button {
 
 <body>
 
-<h3>60 dãy A (5 bit) – Cách 3 + Xuất const</h3>
+<h3>60 dãy A (5 bit) – Mask sau sửa dùng A hàng sau</h3>
 
 <button onclick="copyAll()">Copy const FINAL_MASKS</button>
-<button onclick="resetAll()">Reset (giữ mask đã sửa)</button>
+<button onclick="resetAll()">Reset</button>
 
 <table>
 <thead>
 <tr>
   <th>#</th>
-  <th>Nhập 5 bít trước đó @-@</th>
+  <th>Nhập 5 bit trước đó @-@</th>
   <th>Mask ban đầu</th>
   <th>Play in here !!!</th>
   <th>Mask sau sửa</th>
-  <th>Chuỗi mask sau sửa</th>
+  <th>Chuỗi mask</th>
 </tr>
 </thead>
 <tbody id="rows"></tbody>
@@ -134,68 +130,73 @@ function handleInput(el) {
   el.value = el.value.replace(/[^01]/g, "");
 
   const row = el.closest("tr");
-  const idx = row.rowIndex - 1;
-  const mask = MASKS[idx].split("").map(Number);
-  const inputs = row.querySelectorAll("td:nth-child(2) input.bit");
+  const inputs = [...row.querySelectorAll("td:nth-child(2) input.bit")];
+  const idx = inputs.indexOf(el);
 
-  inputs.forEach((input, i) => {
-    input.classList.remove("match-mask");
-
-    if (input.value !== "") {
-      if (+input.value === mask[i]) {
-        input.classList.add("match-mask");
-      }
-      input.style.color = input.value === "1" ? "red" : "#0096c7";
-    }
-  });
-
-  if (el.value && el.nextElementSibling) {
-    el.nextElementSibling.focus();
+  // focus ô tiếp theo trong cùng hàng
+  if (el.value && idx < inputs.length - 1) {
+    inputs[idx + 1].focus();
   }
 
-  if ([...inputs].every(i => i.value !== "")) {
+  // nếu đủ 5 bit → tính & nhảy sang hàng dưới
+  if (inputs.every(i => i.value !== "")) {
     calculateRow(row);
-    row.nextElementSibling
-      ?.querySelector("input.bit")
-      ?.focus();
+
+    const nextRow = row.nextElementSibling;
+    if (nextRow) {
+      const firstInputNextRow =
+        nextRow.querySelector("td:nth-child(2) input.bit");
+      firstInputNextRow?.focus();
+    }
   }
 }
 
 /* ===== TÍNH HÀNG ===== */
 function calculateRow(row) {
   const idx = row.rowIndex - 1;
+
   const A = [...row.querySelectorAll("td:nth-child(2) input.bit")]
             .map(i => +i.value);
 
-  let mask = MASKS[idx].split("").map(Number);
-  let changed = [];
+  const baseMask = MASKS[idx].split("").map(Number);
 
-  let C = A.map((b, i) => b ^ mask[i]);
-  let ones = C.map((v, i) => v === 1 ? i : -1).filter(i => i !== -1);
-
-  while (ones.length > 2) {
-    const pos = ones[Math.floor(Math.random() * ones.length)];
-    mask[pos] ^= 1;
-    C[pos] ^= 1;
-    changed.push(pos);
-    ones = ones.filter(i => i !== pos);
-  }
-
-  FINAL_MASKS[idx] = mask.slice();
-
-  /* hiển thị C */
+  /* --- C HIỂN THỊ --- */
+  const C_display = A.map((b, i) => b ^ baseMask[i]);
   row.querySelectorAll(".c-bit").forEach((el, i) => {
-    el.value = C[i];
-    el.style.color = C[i] === 1 ? "red" : "#0096c7";
+    el.value = C_display[i];
+    el.style.color = C_display[i] ? "red" : "#0096c7";
   });
 
+  /* --- MASK SAU SỬA (DÙNG A HÀNG SAU) --- */
+  let newMask = baseMask.slice();
+  let changed = [];
+
+  if (idx < 59) {
+    const nextRow = tbody.rows[idx + 1];
+    const A_next = [...nextRow.querySelectorAll("td:nth-child(2) input.bit")]
+                    .map(i => i.value === "" ? 0 : +i.value);
+
+    let C_for_mask = A_next.map((b, i) => b ^ newMask[i]);
+    let ones = C_for_mask.map((v, i) => v === 1 ? i : -1).filter(i => i !== -1);
+
+    while (ones.length > 2) {
+      const pos = ones[Math.floor(Math.random() * ones.length)];
+      newMask[pos] ^= 1;
+      C_for_mask[pos] ^= 1;
+      changed.push(pos);
+      ones = ones.filter(i => i !== pos);
+    }
+  }
+
+  FINAL_MASKS[idx] = newMask.slice();
+
   row.querySelector(`#out-${idx}`).innerHTML =
-    mask.map((b, i) =>
+    newMask.map((b, i) =>
       `<span class="bit-box ${changed.includes(i) ? 'changed' : ''}">${b}</span>`
     ).join("");
 
   document.getElementById(`txt-${idx}`).value =
-    `[${mask.join(",")}],`;
+    `[${newMask.join(",")}],`;
 }
 
 /* ===== COPY ===== */
@@ -211,15 +212,14 @@ ${FINAL_MASKS.map(m => `  [${m.join(",")}],`).join("\n")}
 ];`;
 
   navigator.clipboard.writeText(text);
-  alert("Đã copy const FINAL_MASKS");
+  alert("Đã copy FINAL_MASKS");
 }
 
 /* ===== RESET ===== */
 function resetAll() {
-  document.querySelectorAll("input.bit").forEach(i => {
-    i.value = "";
-    i.classList.remove("match-mask");
-  });
+  document.querySelectorAll("input.bit").forEach(i => i.value = "");
+  document.querySelectorAll(".c-bit").forEach(i => i.value = "");
+  document.querySelectorAll("td[id^='out-']").forEach(td => td.innerHTML = "");
 }
 </script>
 
