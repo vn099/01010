@@ -9,11 +9,6 @@
 body { font-family: Arial, sans-serif; padding: 10px; }
 table { border-collapse: collapse; width: 100%; max-width: 1800px; }
 th, td { border: 1px solid #ccc; padding: 4px; text-align: center; }
-input.bit {
-  width: 30px;
-  font-size: 18px;
-  text-align: center;
-}
 
 input.bit {
   width: 30px;
@@ -21,11 +16,9 @@ input.bit {
   font-size: 18px;
   text-align: center;
   margin: 0 6px;
-
-  background-color: yellow;   /* nền vàng */
+  background-color: yellow;
   border: 1px solid #999;
   border-radius: 8px;
-
   font-weight: bold;
   color: #000;
 }
@@ -34,8 +27,15 @@ input.bit:focus {
   background-color: #ffe066;
 }
 
+/* BIT A TRÙNG MASK */
+input.bit.match-mask {
+  background-color: #ff4d4d !important;
+  color: #fff !important;
+}
+
 .bit-box { display: inline-block; width: 26px; }
 .changed { background: #ff4d4d; color: #fff; font-weight: bold; }
+
 textarea.row-output {
   width: 150px;
   height: 32px;
@@ -43,6 +43,7 @@ textarea.row-output {
   font-family: monospace;
   font-size: 14px;
 }
+
 button {
   margin: 6px 6px 12px 0;
   padding: 8px 20px;
@@ -87,9 +88,7 @@ const MASKS = [
   "11111","00000","10101","01010","11000","00111"
 ];
 
-/* ===== CONST KẾT QUẢ CUỐI ===== */
 const FINAL_MASKS = Array(60).fill(null);
-
 const tbody = document.getElementById("rows");
 
 /* ===== TẠO BẢNG ===== */
@@ -100,8 +99,8 @@ for (let i = 0; i < 60; i++) {
     <td>
       ${Array(5).fill(0).map(() =>
         `<input class="bit" maxlength="1"
-                inputmode="numeric" pattern="[01]"
-                oninput="handleInput(this)">`
+          inputmode="numeric" pattern="[01]"
+          oninput="handleInput(this)">`
       ).join("")}
     </td>
     <td>${renderBits(MASKS[i])}</td>
@@ -121,28 +120,39 @@ function renderBits(bits, changed = []) {
   ).join("");
 }
 
+/* ===== INPUT A ===== */
 function handleInput(el) {
   el.value = el.value.replace(/[^01]/g, "");
 
-  // đổi màu theo giá trị
-  if (el.value === "1") {
-    el.style.color = "red";
-  } else if (el.value === "0") {
-    el.style.color = "#0096c7";
-  } else {
-    el.style.color = "#000";
-  }
+  const row = el.closest("tr");
+  const idx = row.rowIndex - 1;
+  const mask = MASKS[idx].split("").map(Number);
+  const inputs = row.querySelectorAll("input.bit");
 
-  // auto focus
+  inputs.forEach((input, i) => {
+    input.classList.remove("match-mask");
+
+    if (input.value === "1") {
+      input.style.color = "red";
+      if (mask[i] === 1) {
+        input.classList.add("match-mask");
+      }
+    } else if (input.value === "0") {
+      input.style.color = "#0096c7";
+    } else {
+      input.style.color = "#000";
+    }
+  });
+
   if (el.value && el.nextElementSibling) {
     el.nextElementSibling.focus();
   }
 
-  const row = el.closest("tr");
-  const inputs = row.querySelectorAll("input.bit");
   if ([...inputs].every(i => i.value !== "")) {
     calculateRow(row);
-    row.nextElementSibling?.querySelector("input.bit")?.focus();
+    row.nextElementSibling
+      ?.querySelector("input.bit")
+      ?.focus();
   }
 }
 
@@ -154,8 +164,7 @@ function calculateRow(row) {
   let changed = [];
 
   let C = A.map((b, i) => b ^ mask[i]);
-  let ones = [];
-  for (let i = 0; i < 5; i++) if (C[i] === 1) ones.push(i);
+  let ones = C.map((v, i) => v === 1 ? i : -1).filter(i => i !== -1);
 
   while (ones.length > 2) {
     const pos = ones[Math.floor(Math.random() * ones.length)];
@@ -168,12 +177,13 @@ function calculateRow(row) {
   FINAL_MASKS[idx] = mask.slice();
 
   document.getElementById(`c-${idx}`).innerHTML = renderBits(C.join(""));
-  document.getElementById(`out-${idx}`).innerHTML = renderBits(mask.join(""), changed);
+  document.getElementById(`out-${idx}`).innerHTML =
+    renderBits(mask.join(""), changed);
   document.getElementById(`txt-${idx}`).value =
     `[${mask.join(",")}],`;
 }
 
-/* ===== COPY CONST ===== */
+/* ===== COPY ===== */
 function copyAll() {
   if (FINAL_MASKS.some(v => v === null)) {
     alert("Chưa đủ 60 mask");
@@ -191,10 +201,12 @@ ${FINAL_MASKS.map(m => `  [${m.join(",")}],`).join("\n")}
 
 /* ===== RESET ===== */
 function resetAll() {
-  document.querySelectorAll("input.bit").forEach(i => i.value = "");
+  document.querySelectorAll("input.bit").forEach(i => {
+    i.value = "";
+    i.classList.remove("match-mask");
+  });
 }
 </script>
 
 </body>
 </html>
-
