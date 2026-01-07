@@ -27,7 +27,7 @@ input.bit:focus {
   background-color: #ffe066;
 }
 
-/* BIT A TRÙNG MASK */
+/* BIT A TRÙNG MASK (0 hoặc 1 đều bôi đỏ) */
 input.bit.match-mask {
   background-color: #ff4d4d !important;
   color: #fff !important;
@@ -65,7 +65,7 @@ button {
   <th>#</th>
   <th>A (5 bit)</th>
   <th>Mask ban đầu</th>
-  <th>C = A XOR Mask</th>
+  <th>Play in here!!!</th>
   <th>Mask sau sửa</th>
   <th>Chuỗi mask sau sửa</th>
 </tr>
@@ -132,13 +132,14 @@ function handleInput(el) {
   inputs.forEach((input, i) => {
     input.classList.remove("match-mask");
 
-    if (input.value === "1") {
-      input.style.color = "red";
-      if (mask[i] === 1) {
+    if (input.value !== "") {
+      // so TRÙNG 0/1
+      if (+input.value === mask[i]) {
         input.classList.add("match-mask");
       }
-    } else if (input.value === "0") {
-      input.style.color = "#0096c7";
+
+      // màu chữ theo bit
+      input.style.color = input.value === "1" ? "red" : "#0096c7";
     } else {
       input.style.color = "#000";
     }
@@ -210,3 +211,4 @@ function resetAll() {
 
 </body>
 </html>
+
