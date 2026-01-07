@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>60 dãy A – Mask 5 bit (logic mới)</title>
+<title>60 dãy A – Mask 5 bit</title>
 
 <style>
 body { font-family: Arial, sans-serif; padding: 10px; }
@@ -37,6 +37,11 @@ input.bit.c-bit {
   font-weight: bold;
 }
 
+.a-match {
+  background-color: #ff4d4d !important;
+  color: #fff !important;
+}
+
 textarea.row-output {
   width: 150px;
   height: 32px;
@@ -64,9 +69,9 @@ button {
 <thead>
 <tr>
   <th>#</th>
-  <th>Nhập 5 bit trước đó @-@</th>
+  <th>A (5 bit)</th>
   <th>Mask ban đầu</th>
-  <th>Play in here !!!</th>
+  <th>C = A XOR Mask</th>
   <th>Mask sau sửa</th>
   <th>Chuỗi mask</th>
 </tr>
@@ -75,7 +80,6 @@ button {
 </table>
 
 <script>
-/* ===== MASK BAN ĐẦU ===== */
 const MASKS = [
   "10101","01010","11000","00111","10010","01101",
   "11100","00011","10110","01001","11010","00101",
@@ -97,35 +101,28 @@ for (let i = 0; i < 60; i++) {
   const tr = document.createElement("tr");
   tr.innerHTML = `
     <td>${i + 1}</td>
-
     <td>
       ${Array(5).fill(0).map(() =>
         `<input class="bit" maxlength="1"
-          inputmode="numeric" pattern="[01]"
-          oninput="handleInput(this)">`
+         inputmode="numeric" pattern="[01]"
+         oninput="handleInput(this)">`
       ).join("")}
     </td>
-
     <td>${MASKS[i].split("").map(b =>
       `<span class="bit-box">${b}</span>`
     ).join("")}</td>
-
     <td id="c-${i}">
       ${Array(5).fill(0).map(() =>
         `<input class="bit c-bit" readonly>`
       ).join("")}
     </td>
-
     <td id="out-${i}"></td>
-
-    <td>
-      <textarea class="row-output" id="txt-${i}" readonly></textarea>
-    </td>
+    <td><textarea class="row-output" id="txt-${i}" readonly></textarea></td>
   `;
   tbody.appendChild(tr);
 }
 
-/* ===== INPUT A ===== */
+/* ===== INPUT ===== */
 function handleInput(el) {
   el.value = el.value.replace(/[^01]/g, "");
 
@@ -133,58 +130,64 @@ function handleInput(el) {
   const inputs = [...row.querySelectorAll("td:nth-child(2) input.bit")];
   const idx = inputs.indexOf(el);
 
-  // focus ô tiếp theo trong cùng hàng
-  if (el.value && idx < inputs.length - 1) {
-    inputs[idx + 1].focus();
-  }
+  if (el.value && idx < 4) inputs[idx + 1].focus();
 
-  // nếu đủ 5 bit → tính & nhảy sang hàng dưới
   if (inputs.every(i => i.value !== "")) {
     calculateRow(row);
+    // 🔁 tính lại mask cho hàng trước (nếu có)
+const prevRow = row.previousElementSibling;
+if (prevRow) {
+  calculateRow(prevRow);
+}
 
-    const nextRow = row.nextElementSibling;
-    if (nextRow) {
-      const firstInputNextRow =
-        nextRow.querySelector("td:nth-child(2) input.bit");
-      firstInputNextRow?.focus();
-    }
+    row.nextElementSibling
+      ?.querySelector("td:nth-child(2) input.bit")
+      ?.focus();
   }
 }
 
 /* ===== TÍNH HÀNG ===== */
 function calculateRow(row) {
   const idx = row.rowIndex - 1;
-
   const A = [...row.querySelectorAll("td:nth-child(2) input.bit")]
-            .map(i => +i.value);
+    .map(i => +i.value);
 
   const baseMask = MASKS[idx].split("").map(Number);
 
-  /* --- C HIỂN THỊ --- */
-  const C_display = A.map((b, i) => b ^ baseMask[i]);
+  /* ---- C ---- */
+  const C = A.map((b, i) => b ^ baseMask[i]);
   row.querySelectorAll(".c-bit").forEach((el, i) => {
-    el.value = C_display[i];
-    el.style.color = C_display[i] ? "red" : "#0096c7";
+    el.value = C[i];
+    el.style.color = C[i] ? "red" : "#0096c7";
   });
 
-  /* --- MASK SAU SỬA (DÙNG A HÀNG SAU) --- */
+  /* ---- MASK SAU SỬA (CHỈ KHI A HÀNG SAU ĐỦ) ---- */
   let newMask = baseMask.slice();
   let changed = [];
 
   if (idx < 59) {
     const nextRow = tbody.rows[idx + 1];
-    const A_next = [...nextRow.querySelectorAll("td:nth-child(2) input.bit")]
-                    .map(i => i.value === "" ? 0 : +i.value);
+    const nextInputs =
+      nextRow.querySelectorAll("td:nth-child(2) input.bit");
 
-    let C_for_mask = A_next.map((b, i) => b ^ newMask[i]);
-    let ones = C_for_mask.map((v, i) => v === 1 ? i : -1).filter(i => i !== -1);
+    if ([...nextInputs].every(i => i.value !== "")) {
+      const A_next = [...nextInputs].map(i => +i.value);
+      let C_for_mask = A_next.map((b, i) => b ^ newMask[i]);
+      let ones = C_for_mask
+        .map((v, i) => v === 1 ? i : -1)
+        .filter(i => i !== -1);
 
-    while (ones.length > 2) {
-      const pos = ones[Math.floor(Math.random() * ones.length)];
-      newMask[pos] ^= 1;
-      C_for_mask[pos] ^= 1;
-      changed.push(pos);
-      ones = ones.filter(i => i !== pos);
+      while (ones.length > 2) {
+        const pos = ones.pop();
+        newMask[pos] ^= 1;
+        changed.push(pos);
+      }
+    } else {
+      row.querySelector(`#out-${idx}`).innerHTML = "";
+      document.getElementById(`txt-${idx}`).value = "";
+      FINAL_MASKS[idx] = null;
+      highlightAMatchWithPrevC(idx);
+      return;
     }
   }
 
@@ -197,20 +200,38 @@ function calculateRow(row) {
 
   document.getElementById(`txt-${idx}`).value =
     `[${newMask.join(",")}],`;
+
+  highlightAMatchWithPrevC(idx);
+  highlightAMatchWithPrevC(idx + 1);
+}
+
+/* ===== SO SÁNH A vs C TRƯỚC ===== */
+function highlightAMatchWithPrevC(idx) {
+  if (idx <= 0 || idx >= 60) return;
+
+  const row = tbody.rows[idx];
+  const prevRow = tbody.rows[idx - 1];
+  const A_inputs = row.querySelectorAll("td:nth-child(2) input.bit");
+  const C_prev = [...prevRow.querySelectorAll(".c-bit")].map(i => i.value);
+
+  A_inputs.forEach((input, i) => {
+    input.classList.remove("a-match");
+    if (input.value !== "" && input.value === C_prev[i]) {
+      input.classList.add("a-match");
+    }
+  });
 }
 
 /* ===== COPY ===== */
 function copyAll() {
   if (FINAL_MASKS.some(v => v === null)) {
-    alert("Chưa đủ 60 mask");
+    alert("Chưa đủ mask hợp lệ");
     return;
   }
-
   const text =
 `const FINAL_MASKS = [
 ${FINAL_MASKS.map(m => `  [${m.join(",")}],`).join("\n")}
 ];`;
-
   navigator.clipboard.writeText(text);
   alert("Đã copy FINAL_MASKS");
 }
@@ -220,6 +241,8 @@ function resetAll() {
   document.querySelectorAll("input.bit").forEach(i => i.value = "");
   document.querySelectorAll(".c-bit").forEach(i => i.value = "");
   document.querySelectorAll("td[id^='out-']").forEach(td => td.innerHTML = "");
+  document.querySelectorAll("textarea").forEach(t => t.value = "");
+  FINAL_MASKS.fill(null);
 }
 </script>
 
