@@ -27,10 +27,15 @@ input.bit:focus {
   background-color: #ffe066;
 }
 
-/* BIT A TRÙNG MASK (0 hoặc 1 đều bôi đỏ) */
+/* bit A trùng mask */
 input.bit.match-mask {
   background-color: #ff4d4d !important;
   color: #fff !important;
+}
+
+/* bit C readonly */
+input.bit.c-bit {
+  cursor: default;
 }
 
 .bit-box { display: inline-block; width: 26px; }
@@ -63,9 +68,9 @@ button {
 <thead>
 <tr>
   <th>#</th>
-  <th>A (5 bit)</th>
+  <th>Nhập 5 bít trước đó @-@</th>
   <th>Mask ban đầu</th>
-  <th>Play in here!!!</th>
+  <th>Play in here !!!</th>
   <th>Mask sau sửa</th>
   <th>Chuỗi mask sau sửa</th>
 </tr>
@@ -74,7 +79,7 @@ button {
 </table>
 
 <script>
-/* ===== 60 MASK BAN ĐẦU ===== */
+/* ===== MASK BAN ĐẦU ===== */
 const MASKS = [
   "10101","01010","11000","00111","10010","01101",
   "11100","00011","10110","01001","11010","00101",
@@ -96,6 +101,7 @@ for (let i = 0; i < 60; i++) {
   const tr = document.createElement("tr");
   tr.innerHTML = `
     <td>${i + 1}</td>
+
     <td>
       ${Array(5).fill(0).map(() =>
         `<input class="bit" maxlength="1"
@@ -103,21 +109,24 @@ for (let i = 0; i < 60; i++) {
           oninput="handleInput(this)">`
       ).join("")}
     </td>
-    <td>${renderBits(MASKS[i])}</td>
-    <td id="c-${i}"></td>
+
+    <td>${MASKS[i].split("").map(b =>
+      `<span class="bit-box">${b}</span>`
+    ).join("")}</td>
+
+    <td id="c-${i}">
+      ${Array(5).fill(0).map(() =>
+        `<input class="bit c-bit" readonly>`
+      ).join("")}
+    </td>
+
     <td id="out-${i}"></td>
+
     <td>
       <textarea class="row-output" id="txt-${i}" readonly></textarea>
     </td>
   `;
   tbody.appendChild(tr);
-}
-
-/* ===== RENDER BIT ===== */
-function renderBits(bits, changed = []) {
-  return bits.split("").map((b, i) =>
-    `<span class="bit-box ${changed.includes(i) ? 'changed' : ''}">${b}</span>`
-  ).join("");
 }
 
 /* ===== INPUT A ===== */
@@ -127,21 +136,16 @@ function handleInput(el) {
   const row = el.closest("tr");
   const idx = row.rowIndex - 1;
   const mask = MASKS[idx].split("").map(Number);
-  const inputs = row.querySelectorAll("input.bit");
+  const inputs = row.querySelectorAll("td:nth-child(2) input.bit");
 
   inputs.forEach((input, i) => {
     input.classList.remove("match-mask");
 
     if (input.value !== "") {
-      // so TRÙNG 0/1
       if (+input.value === mask[i]) {
         input.classList.add("match-mask");
       }
-
-      // màu chữ theo bit
       input.style.color = input.value === "1" ? "red" : "#0096c7";
-    } else {
-      input.style.color = "#000";
     }
   });
 
@@ -157,10 +161,12 @@ function handleInput(el) {
   }
 }
 
-/* ===== TÍNH 1 HÀNG ===== */
+/* ===== TÍNH HÀNG ===== */
 function calculateRow(row) {
   const idx = row.rowIndex - 1;
-  const A = [...row.querySelectorAll("input.bit")].map(i => +i.value);
+  const A = [...row.querySelectorAll("td:nth-child(2) input.bit")]
+            .map(i => +i.value);
+
   let mask = MASKS[idx].split("").map(Number);
   let changed = [];
 
@@ -177,9 +183,17 @@ function calculateRow(row) {
 
   FINAL_MASKS[idx] = mask.slice();
 
-  document.getElementById(`c-${idx}`).innerHTML = renderBits(C.join(""));
-  document.getElementById(`out-${idx}`).innerHTML =
-    renderBits(mask.join(""), changed);
+  /* hiển thị C */
+  row.querySelectorAll(".c-bit").forEach((el, i) => {
+    el.value = C[i];
+    el.style.color = C[i] === 1 ? "red" : "#0096c7";
+  });
+
+  row.querySelector(`#out-${idx}`).innerHTML =
+    mask.map((b, i) =>
+      `<span class="bit-box ${changed.includes(i) ? 'changed' : ''}">${b}</span>`
+    ).join("");
+
   document.getElementById(`txt-${idx}`).value =
     `[${mask.join(",")}],`;
 }
