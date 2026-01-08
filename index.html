@@ -161,7 +161,7 @@ function calculateRow(row) {
     el.style.color = C[i] ? "red" : "#0096c7";
   });
 
-  /* ---- MASK SAU SỬA (CHỈ KHI A HÀNG SAU ĐỦ) ---- */
+  /* ---- MASK SAU SỬA ---- */
   let newMask = baseMask.slice();
   let changed = [];
 
@@ -170,32 +170,20 @@ function calculateRow(row) {
     const nextInputs =
       nextRow.querySelectorAll("td:nth-child(2) input.bit");
 
+    // chỉ sửa khi A hàng sau đã nhập đủ
     if ([...nextInputs].every(i => i.value !== "")) {
       const A_next = [...nextInputs].map(i => +i.value);
 
-// C_for_mask của HÀNG TRƯỚC
-let C_for_mask = A_next.map((b, i) => b ^ newMask[i]);
+      // C_for_mask của hàng trước
+      let C_for_mask = A_next.map((b, i) => b ^ newMask[i]);
 
-while (true) {
-  // các vị trí được phép sửa: A_next ≠ C_for_mask (hàng trước)
-  let candidates = C_for_mask
-    .map((c, i) => (A_next[i] !== c) ? i : -1)
-    .filter(i => i !== -1);
-
-  // điều kiện dừng (bạn đang dùng ≤2 bit 1)
-  const ones = C_for_mask.filter(v => v === 1).length;
-  if (ones <= 2 || candidates.length === 0) break;
-
-  // sửa mask tại 1 vị trí hợp lệ
-  const pos = candidates.pop();
-  newMask[pos] ^= 1;
-  changed.push(pos);
-
-  // cập nhật lại C_for_mask
-  C_for_mask[pos] = A_next[pos] ^ newMask[pos];
-}
-
-
+      // 🔑 LUẬT DUY NHẤT: sửa khi A_next # C_for_mask
+      for (let i = 0; i < 5; i++) {
+        if (A_next[i] !== C_for_mask[i]) {
+          newMask[i] ^= 1;          // sửa mask
+          changed.push(i);
+        }
+      }
     } else {
       row.querySelector(`#out-${idx}`).innerHTML = "";
       document.getElementById(`txt-${idx}`).value = "";
@@ -262,6 +250,7 @@ function resetAll() {
 
 </body>
 </html>
+
 
 
 
