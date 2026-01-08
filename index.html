@@ -64,7 +64,7 @@ button {
 
 <body>
 
-<h3>60 dãy A (5 bit) - Lucky 5 </h3>
+<h3>60 dãy A (5 bit) - Lucky 9 </h3>
 
 <button onclick="copyAll()">Copy const FINAL_MASKS</button>
 <button onclick="resetAll()">Reset</button>
@@ -229,19 +229,28 @@ function highlightAMatchWithPrevC(idx) {
   });
 }
 
-/* ===== COPY ===== */
 function copyAll() {
   if (FINAL_MASKS.some(v => v === null)) {
     alert("Chưa đủ mask hợp lệ");
     return;
   }
+
+  const rows = [];
+  for (let i = 0; i < 60; i += 6) {
+    rows.push(FINAL_MASKS.slice(i, i + 6));
+  }
+
   const text =
 `const FINAL_MASKS = [
-${FINAL_MASKS.map(m => `  [${m.join(",")}],`).join("\n")}
+${rows.map(group =>
+  `  [ ${group.map(m => `[${m.join(",")}]`).join(", ")} ],`
+).join("\n")}
 ];`;
+
   navigator.clipboard.writeText(text);
-  alert("Đã copy FINAL_MASKS");
+  alert("Đã copy FINAL_MASKS (10 hàng × 6 mask)");
 }
+
 
 /* ===== RESET ===== */
 function resetAll() {
@@ -255,6 +264,7 @@ function resetAll() {
 
 </body>
 </html>
+
 
 
 
