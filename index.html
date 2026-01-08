@@ -64,7 +64,7 @@ button {
 
 <body>
 
-<h3>60 dãy A (5 bit) - Lucky 9 </h3>
+<h3>60 dãy A (5 bit) - Lucky 25 </h3>
 
 <button onclick="copyAll()">Copy const FINAL_MASKS</button>
 <button onclick="resetAll()">Reset</button>
@@ -223,7 +223,12 @@ function highlightAMatchWithPrevC(idx) {
 
   A_inputs.forEach((input, i) => {
     input.classList.remove("a-match");
-    if (input.value !== "" && input.value === C_prev[i]) {
+    if (
+  input.value !== "" &&
+  C_prev[i] !== "" &&
+  input.value === C_prev[i]
+) {
+
       input.classList.add("a-match");
     }
   });
@@ -252,18 +257,37 @@ ${rows.map(group =>
 }
 
 
-/* ===== RESET ===== */
 function resetAll() {
-  document.querySelectorAll("input.bit").forEach(i => i.value = "");
-  document.querySelectorAll(".c-bit").forEach(i => i.value = "");
+  // xóa value
+  document.querySelectorAll("input.bit").forEach(i => {
+    i.value = "";
+    i.classList.remove("a-match"); // 🔑 QUAN TRỌNG
+  });
+
+  // xóa C
+  document.querySelectorAll(".c-bit").forEach(i => {
+    i.value = "";
+    i.style.color = "";
+  });
+
+  // xóa mask hiển thị
   document.querySelectorAll("td[id^='out-']").forEach(td => td.innerHTML = "");
+
+  // xóa textarea
   document.querySelectorAll("textarea").forEach(t => t.value = "");
+
+  // xóa data
   FINAL_MASKS.fill(null);
+
+  // nếu có localStorage
+  localStorage.removeItem("FINAL_MASKS");
 }
+
 </script>
 
 </body>
 </html>
+
 
 
 
