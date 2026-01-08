@@ -32,7 +32,7 @@ input.bit.c-bit {
 }
 
 .changed {
-  background: #ff4d4d;
+  background: "#0096c7";
   color: #fff;
   font-weight: bold;
 }
@@ -60,7 +60,7 @@ button {
 
 <body>
 
-<h3>60 dãy A (5 bit) - Hello </h3>
+<h3>60 dãy A (5 bit) - Lucky </h3>
 
 <button onclick="copyAll()">Copy const FINAL_MASKS</button>
 <button onclick="resetAll()">Reset</button>
@@ -149,19 +149,21 @@ if (prevRow) {
 /* ===== TÍNH HÀNG ===== */
 function calculateRow(row) {
   const idx = row.rowIndex - 1;
+
+  /* --- A hàng hiện tại --- */
   const A = [...row.querySelectorAll("td:nth-child(2) input.bit")]
     .map(i => +i.value);
 
   const baseMask = MASKS[idx].split("").map(Number);
 
-  /* ---- C ---- */
+  /* --- C₁ = A₁ XOR mask gốc --- */
   const C = A.map((b, i) => b ^ baseMask[i]);
   row.querySelectorAll(".c-bit").forEach((el, i) => {
     el.value = C[i];
     el.style.color = C[i] ? "red" : "#0096c7";
   });
 
-  /* ---- MASK SAU SỬA ---- */
+  /* --- MASK SAU SỬA --- */
   let newMask = baseMask.slice();
   let changed = [];
 
@@ -170,17 +172,14 @@ function calculateRow(row) {
     const nextInputs =
       nextRow.querySelectorAll("td:nth-child(2) input.bit");
 
-    // chỉ sửa khi A hàng sau đã nhập đủ
+    /* chỉ sửa khi A₂ đã nhập đủ */
     if ([...nextInputs].every(i => i.value !== "")) {
       const A_next = [...nextInputs].map(i => +i.value);
 
-      // C_for_mask của hàng trước
-      let C_for_mask = A_next.map((b, i) => b ^ newMask[i]);
-
-      // 🔑 LUẬT DUY NHẤT: sửa khi A_next # C_for_mask
+      /* 🔑 SO SÁNH A₂ VỚI C₁ */
       for (let i = 0; i < 5; i++) {
-        if (A_next[i] !== C_for_mask[i]) {
-          newMask[i] ^= 1;          // sửa mask
+        if (A_next[i] !== C[i]) {
+          newMask[i] ^= 1;   // sửa mask
           changed.push(i);
         }
       }
@@ -193,6 +192,7 @@ function calculateRow(row) {
     }
   }
 
+  /* --- LƯU & HIỂN THỊ --- */
   FINAL_MASKS[idx] = newMask.slice();
 
   row.querySelector(`#out-${idx}`).innerHTML =
@@ -250,6 +250,7 @@ function resetAll() {
 
 </body>
 </html>
+
 
 
 
