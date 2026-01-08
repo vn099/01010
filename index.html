@@ -25,6 +25,10 @@ input.bit {
 input.bit.c-bit {
   cursor: default;
 }
+  input.mask-bit {
+  background-color: #fff3cd;   /* khác nhẹ A cho dễ phân biệt */
+}
+
 
 .bit-box {
   display: inline-block;
@@ -32,10 +36,10 @@ input.bit.c-bit {
 }
 
 .changed {
-  background: yellow;
-  color: #fff;
-  font-weight: bold;
+  background-color: #ff4d4d !important;
+  color: #fff !important;
 }
+
 
 .a-match {
   background-color: #ff4d4d !important;
@@ -60,7 +64,7 @@ button {
 
 <body>
 
-<h3>60 dãy A (5 bit) - Lucky 3 </h3>
+<h3>60 dãy A (5 bit) - Lucky 5 </h3>
 
 <button onclick="copyAll()">Copy const FINAL_MASKS</button>
 <button onclick="resetAll()">Reset</button>
@@ -197,7 +201,8 @@ function calculateRow(row) {
 
   row.querySelector(`#out-${idx}`).innerHTML =
     newMask.map((b, i) =>
-      `<span class="bit-box ${changed.includes(i) ? 'changed' : ''}">${b}</span>`
+     `<input class="bit mask-bit ${changed.includes(i) ? 'changed' : ''}"
+            value="${b}" readonly>`
     ).join("");
 
   document.getElementById(`txt-${idx}`).value =
@@ -250,6 +255,7 @@ function resetAll() {
 
 </body>
 </html>
+
 
 
 
