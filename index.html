@@ -172,23 +172,29 @@ function calculateRow(row) {
 
     if ([...nextInputs].every(i => i.value !== "")) {
       const A_next = [...nextInputs].map(i => +i.value);
-     let C_for_mask = A_next.map((b, i) => b ^ newMask[i]);
 
-// chỉ cho phép đổi mask ở vị trí A_next[i] !== C_for_mask[i]
-let candidates = C_for_mask
-  .map((v, i) => (v === 1 && A_next[i] !== v) ? i : -1)
-  .filter(i => i !== -1);
+// C_for_mask của HÀNG TRƯỚC
+let C_for_mask = A_next.map((b, i) => b ^ newMask[i]);
 
-while (candidates.length > 2) {
+while (true) {
+  // các vị trí được phép sửa: A_next ≠ C_for_mask (hàng trước)
+  let candidates = C_for_mask
+    .map((c, i) => (A_next[i] !== c) ? i : -1)
+    .filter(i => i !== -1);
+
+  // điều kiện dừng (bạn đang dùng ≤2 bit 1)
+  const ones = C_for_mask.filter(v => v === 1).length;
+  if (ones <= 2 || candidates.length === 0) break;
+
+  // sửa mask tại 1 vị trí hợp lệ
   const pos = candidates.pop();
-
-  // đổi mask
   newMask[pos] ^= 1;
   changed.push(pos);
 
-  // cập nhật lại C sau khi đổi mask
+  // cập nhật lại C_for_mask
   C_for_mask[pos] = A_next[pos] ^ newMask[pos];
 }
+
 
     } else {
       row.querySelector(`#out-${idx}`).innerHTML = "";
@@ -256,6 +262,7 @@ function resetAll() {
 
 </body>
 </html>
+
 
 
 
