@@ -187,7 +187,7 @@ function calculateRow(row) {
   /* --- A hàng hiện tại --- */
   const A = [...row.querySelectorAll("td:nth-child(2) input.bit")]
     .map(i => +i.value);
-if (!MASKS[idx]) return;
+
   const baseMask = MASKS[idx].split("").map(Number);
 
   /* --- C₁ = A₁ XOR mask gốc --- */
@@ -338,6 +338,7 @@ function resetAll() {
 
 </body>
 </html>
+
 
 
 
