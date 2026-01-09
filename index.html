@@ -259,19 +259,24 @@ function highlightAMatchWithPrevC(idx) {
 }
 
 function copyAll() {
+  // ❌ Không có mask nào hợp lệ
   if (FINAL_MASKS.every(v => v === null)) {
-  alert("Chưa có mask hợp lệ");
-  return;
-}
+    alert("Chưa có mask hợp lệ");
+    return;
+  }
 
   const rows = [];
- for (let i = 0; i < ROW_COUNT; i += 6) {
-  const group = FINAL_MASKS.slice(i, i + 6);
-  if (group.some(m => m !== null)) {
-    rows.push(group);
-  }
-}
 
+  for (let i = 0; i < ROW_COUNT; i += 6) {
+    const group = FINAL_MASKS.slice(i, i + 6);
+
+    // chỉ lấy mask KHÔNG null
+    const validMasks = group.filter(m => m !== null);
+
+    if (validMasks.length > 0) {
+      rows.push(validMasks);
+    }
+  }
 
   const text =
 `const FINAL_MASKS = [
@@ -281,8 +286,9 @@ ${rows
 ];`;
 
   navigator.clipboard.writeText(text);
-  alert("Đã copy FINAL_MASKS (10 hàng × 6 mask)");
+  alert(`Đã copy ${rows.length} hàng hợp lệ`);
 }
+
 
 
 
@@ -316,6 +322,7 @@ function resetAll() {
 
 </body>
 </html>
+
 
 
 
