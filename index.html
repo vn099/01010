@@ -86,7 +86,7 @@ button {
 
 <body>
 
-<h3>60 dãy A (5 bit) - Lucky Star 9 </h3>
+<h3>60 dãy A (5 bit) - Lucky Star 999 </h3>
 
 <button onclick="copyAll()">Copy const FINAL_MASKS</button>
 <button onclick="resetAll()">Reset</button>
@@ -115,11 +115,9 @@ const MASKS = [
 "01111","10001","01111","10100","01110","00000",
 "10100","00010","10000","11101","10100","00010",
 "00010","00100","00000","01101","00010","10000",
- "11101","00111","00100","01011","11001","11011",
-  
-
-
-"10011","11111","01000",     "00011","10110","01001",
+"11101","00111","00100","01011","11001","11011",
+"10011","11111","01000","10001","10101","10000",
+  "11000","00111",
 
 
   
@@ -254,7 +252,8 @@ document.getElementById(`txt-${idx}`).value =
 
 /* ===== SO SÁNH A2 vs C1 TRƯỚC TÌM BÍT TRÙNG ĐỂ TÔ MÀU===== */
 function highlightAMatchWithPrevC(idx) {
-  if (idx <= 0 || idx >= 60) return;
+  if (idx <= 0 || idx >= ROW_COUNT) return;
+
 
   const row = tbody.rows[idx];
   const prevRow = tbody.rows[idx - 1];
@@ -340,6 +339,7 @@ function resetAll() {
 
 </body>
 </html>
+
 
 
 
