@@ -258,37 +258,39 @@ function highlightAMatchWithPrevC(idx) {
   });
 }
 
-function copyAll() {
-  // ❌ Không có mask nào hợp lệ
-  if (FINAL_MASKS.every(v => v === null)) {
-    alert("Chưa có mask hợp lệ");
+async function copyAll() {
+  // 1️⃣ Lấy tất cả mask hợp lệ (không null)
+  const validMasks = FINAL_MASKS.filter(m => m !== null);
+
+  // 2️⃣ Không có gì để copy
+  if (validMasks.length === 0) {
+    alert("❌ Không có mask hợp lệ để copy");
     return;
   }
 
+  // 3️⃣ Chia thành các hàng, mỗi hàng 6 mask
   const rows = [];
-
-  for (let i = 0; i < ROW_COUNT; i += 6) {
-    const group = FINAL_MASKS.slice(i, i + 6);
-
-    // chỉ lấy mask KHÔNG null
-    const validMasks = group.filter(m => m !== null);
-
-    if (validMasks.length > 0) {
-      rows.push(validMasks);
-    }
+  for (let i = 0; i < validMasks.length; i += 6) {
+    rows.push(validMasks.slice(i, i + 6));
   }
 
+  // 4️⃣ Tạo text copy
   const text =
 `const FINAL_MASKS = [
 ${rows
-  .map(group => `  ${group.map(m => `"${m.join("")}"`).join(", ")}`)
+  .map(r => `  "${r.map(m => m.join("")).join('","')}"`)
   .join(",\n")}
 ];`;
 
-  navigator.clipboard.writeText(text);
-  alert(`Đã copy ${rows.length} hàng hợp lệ`);
+  // 5️⃣ Copy + thông báo kết quả
+  try {
+    await navigator.clipboard.writeText(text);
+    alert(`✅ Đã copy thành công (${validMasks.length} mask)`);
+  } catch (err) {
+    console.error(err);
+    alert("❌ Copy thất bại – trình duyệt chặn clipboard");
+  }
 }
-
 
 
 
@@ -322,6 +324,7 @@ function resetAll() {
 
 </body>
 </html>
+
 
 
 
