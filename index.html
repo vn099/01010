@@ -142,7 +142,7 @@ for (let i = 0; i < ROW_COUNT; i++) {
     <td>${MASKS[i].split("").map(b =>
       `<span class="bit-box">${b}</span>`
     ).join("")}</td>
-    <td id="c-${i}" style="display:none">
+    <td id="c-${i}">
       ${Array(5).fill(0).map(() =>
         `<input class="bit c-bit" readonly>`
       ).join("")}
@@ -211,7 +211,7 @@ if (idx < ROW_COUNT - 1) {
 
   if ([...nextInputs].every(i => i.value !== "")) {
     // 👉 HIỆN C1 + mask + textarea khi đã có A2
-row.querySelector(`#c-${idx}`).style.display = "";
+
 row.querySelector(`#out-${idx}`).style.display = "";
 document.getElementById(`txt-${idx}`).parentElement.style.display = "";
     const A2 = [...nextInputs].map(i => +i.value);
@@ -338,6 +338,7 @@ function resetAll() {
 
 </body>
 </html>
+
 
 
 
