@@ -32,7 +32,8 @@ input.bit.c-bit {
   width: 26px;
   height: 26px;
   text-align: center;
- 
+  border: 1px solid #bbb;
+  border-radius: 4px;
   font-weight: bold;
   color: #444;
   background: #f8f9fa;
@@ -69,7 +70,7 @@ input.bit.c-bit {
 
 textarea.row-output {
   width: 100px;
-  height: 20px;
+  height: 32px;
   resize: none;
   font-family: monospace;
   font-size: 14px;
@@ -85,7 +86,7 @@ button {
 
 <body>
 
-<h3>60 dãy A (5 bit) - Lucky Star 999 </h3>
+<h3>60 dãy A (5 bit) - Lucky Star 9 </h3>
 
 <button onclick="copyAll()">Copy const FINAL_MASKS</button>
 <button onclick="resetAll()">Reset</button>
@@ -114,9 +115,11 @@ const MASKS = [
 "01111","10001","01111","10100","01110","00000",
 "10100","00010","10000","11101","10100","00010",
 "00010","00100","00000","01101","00010","10000",
-"11101","00111","00100","01011","11001","11011",
-"10011","11111","01000","10001","10101","10000",
-  "11000","00111",
+ "11101","00111","00100","01011","11001","11011",
+  
+
+
+"10011","11111",     "11100","00011","10110","01001",
 
 
   
@@ -147,11 +150,8 @@ for (let i = 0; i < ROW_COUNT; i++) {
         `<input class="bit c-bit" readonly>`
       ).join("")}
     </td>
-    <td id="out-${i}" style="display:none"></td>
-<td style="display:none">
-  <textarea class="row-output" id="txt-${i}" readonly></textarea>
-</td>
-
+    <td id="out-${i}"></td>
+    <td><textarea class="row-output" id="txt-${i}" readonly></textarea></td>
   `;
   tbody.appendChild(tr);
 }
@@ -187,7 +187,7 @@ function calculateRow(row) {
   /* --- A hàng hiện tại --- */
   const A = [...row.querySelectorAll("td:nth-child(2) input.bit")]
     .map(i => +i.value);
-
+if (!MASKS[idx]) return;
   const baseMask = MASKS[idx].split("").map(Number);
 
   /* --- C₁ = A₁ XOR mask gốc --- */
@@ -203,17 +203,12 @@ highlightAMatchWithPrevC(rowIdx);
 let newMask = baseMask.slice();
 let diffA2C1 = Array(5).fill(false);
 
-
 if (idx < ROW_COUNT - 1) {
   const nextRow = tbody.rows[idx + 1];
   const nextInputs =
     nextRow.querySelectorAll("td:nth-child(2) input.bit");
 
   if ([...nextInputs].every(i => i.value !== "")) {
-    // 👉 HIỆN C1 + mask + textarea khi đã có A2
-
-row.querySelector(`#out-${idx}`).style.display = "";
-document.getElementById(`txt-${idx}`).parentElement.style.display = "";
     const A2 = [...nextInputs].map(i => +i.value);
 
     for (let i = 0; i < 5; i++) {
@@ -226,10 +221,6 @@ document.getElementById(`txt-${idx}`).parentElement.style.display = "";
     row.querySelector(`#out-${idx}`).innerHTML = "";
     document.getElementById(`txt-${idx}`).value = "";
     FINAL_MASKS[idx] = null;
-    row.querySelector(`#c-${idx}`).style.display = "none";
-row.querySelector(`#out-${idx}`).style.display = "none";
-document.getElementById(`txt-${idx}`).parentElement.style.display = "none";
-
     return;
   }
 }
@@ -251,8 +242,7 @@ document.getElementById(`txt-${idx}`).value =
 
 /* ===== SO SÁNH A2 vs C1 TRƯỚC TÌM BÍT TRÙNG ĐỂ TÔ MÀU===== */
 function highlightAMatchWithPrevC(idx) {
-  if (idx <= 0 || idx >= ROW_COUNT) return;
-
+  if (idx <= 0 || idx >= 60) return;
 
   const row = tbody.rows[idx];
   const prevRow = tbody.rows[idx - 1];
@@ -338,23 +328,3 @@ function resetAll() {
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
