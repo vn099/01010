@@ -122,11 +122,12 @@ const MASKS = [
   "11111","00000","10101","01010","11000","00111"
 ];
 
-const FINAL_MASKS = Array(60).fill(null);
+  const ROW_COUNT = MASKS.length;
+const FINAL_MASKS = Array(ROW_COUNT).fill(null);
 const tbody = document.getElementById("rows");
 
 /* ===== TẠO BẢNG ===== */
-for (let i = 0; i < 60; i++) {
+for (let i = 0; i < ROW_COUNT; i++) {
   const tr = document.createElement("tr");
   tr.innerHTML = `
     <td>${i + 1}</td>
@@ -182,7 +183,7 @@ function calculateRow(row) {
   /* --- A hàng hiện tại --- */
   const A = [...row.querySelectorAll("td:nth-child(2) input.bit")]
     .map(i => +i.value);
-
+if (!MASKS[idx]) return;
   const baseMask = MASKS[idx].split("").map(Number);
 
   /* --- C₁ = A₁ XOR mask gốc --- */
@@ -198,7 +199,7 @@ highlightAMatchWithPrevC(rowIdx);
 let newMask = baseMask.slice();
 let diffA2C1 = Array(5).fill(false);
 
-if (idx < 59) {
+if (idx < ROW_COUNT - 1) {
   const nextRow = tbody.rows[idx + 1];
   const nextInputs =
     nextRow.querySelectorAll("td:nth-child(2) input.bit");
@@ -264,9 +265,13 @@ function copyAll() {
   }
 
   const rows = [];
-  for (let i = 0; i < 60; i += 6) {
-    rows.push(FINAL_MASKS.slice(i, i + 6));
+ for (let i = 0; i < ROW_COUNT; i += 6) {
+  const group = FINAL_MASKS.slice(i, i + 6);
+  if (group.every(m => m !== null)) {
+    rows.push(group);
   }
+}
+
 
   const text =
 `const FINAL_MASKS = [
@@ -311,6 +316,7 @@ function resetAll() {
 
 </body>
 </html>
+
 
 
 
