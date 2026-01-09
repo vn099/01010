@@ -259,15 +259,15 @@ function highlightAMatchWithPrevC(idx) {
 }
 
 function copyAll() {
-  if (FINAL_MASKS.some(v => v === null)) {
-    alert("Chưa đủ mask hợp lệ");
-    return;
-  }
+  if (FINAL_MASKS.every(v => v === null)) {
+  alert("Chưa có mask hợp lệ");
+  return;
+}
 
   const rows = [];
  for (let i = 0; i < ROW_COUNT; i += 6) {
   const group = FINAL_MASKS.slice(i, i + 6);
-  if (group.every(m => m !== null)) {
+  if (group.some(m => m !== null)) {
     rows.push(group);
   }
 }
@@ -316,6 +316,7 @@ function resetAll() {
 
 </body>
 </html>
+
 
 
 
