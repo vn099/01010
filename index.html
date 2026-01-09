@@ -119,7 +119,7 @@ const MASKS = [
   
 
 
-"10011","11111",     "11100","00011","10110","01001",
+"10011","11111","01000",     "00011","10110","01001",
 
 
   
@@ -145,13 +145,16 @@ for (let i = 0; i < ROW_COUNT; i++) {
     <td>${MASKS[i].split("").map(b =>
       `<span class="bit-box">${b}</span>`
     ).join("")}</td>
-    <td id="c-${i}">
+    <td id="c-${i}" style="display:none">
       ${Array(5).fill(0).map(() =>
         `<input class="bit c-bit" readonly>`
       ).join("")}
     </td>
-    <td id="out-${i}"></td>
-    <td><textarea class="row-output" id="txt-${i}" readonly></textarea></td>
+    <td id="out-${i}" style="display:none"></td>
+<td style="display:none">
+  <textarea class="row-output" id="txt-${i}" readonly></textarea>
+</td>
+
   `;
   tbody.appendChild(tr);
 }
@@ -203,12 +206,17 @@ highlightAMatchWithPrevC(rowIdx);
 let newMask = baseMask.slice();
 let diffA2C1 = Array(5).fill(false);
 
+
 if (idx < ROW_COUNT - 1) {
   const nextRow = tbody.rows[idx + 1];
   const nextInputs =
     nextRow.querySelectorAll("td:nth-child(2) input.bit");
 
   if ([...nextInputs].every(i => i.value !== "")) {
+    // 👉 HIỆN C1 + mask + textarea khi đã có A2
+row.querySelector(`#c-${idx}`).style.display = "";
+row.querySelector(`#out-${idx}`).style.display = "";
+document.getElementById(`txt-${idx}`).parentElement.style.display = "";
     const A2 = [...nextInputs].map(i => +i.value);
 
     for (let i = 0; i < 5; i++) {
@@ -221,6 +229,10 @@ if (idx < ROW_COUNT - 1) {
     row.querySelector(`#out-${idx}`).innerHTML = "";
     document.getElementById(`txt-${idx}`).value = "";
     FINAL_MASKS[idx] = null;
+    row.querySelector(`#c-${idx}`).style.display = "none";
+row.querySelector(`#out-${idx}`).style.display = "none";
+document.getElementById(`txt-${idx}`).parentElement.style.display = "none";
+
     return;
   }
 }
@@ -328,6 +340,7 @@ function resetAll() {
 
 </body>
 </html>
+
 
 
 
